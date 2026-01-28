@@ -159,7 +159,7 @@ export function AppSidebar() {
 
         <nav
           className={cn(
-            'flex-1 space-y-1 py-4',
+            'flex-1 space-y-1 py-4 overflow-y-auto overflow-x-hidden',
             isCollapsed ? 'px-2' : 'px-3'
           )}
         >
@@ -294,7 +294,7 @@ export function AppSidebar() {
 
         <div
           className={cn(
-            'border-t border-sidebar-border p-3 space-y-2',
+            'border-t border-sidebar-border p-3 space-y-2 relative z-10',
             isCollapsed && 'px-2'
           )}
         >
@@ -352,27 +352,45 @@ export function AppSidebar() {
           {isCollapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-center sidebar-menu-item"
-                  onClick={logout}
-                  aria-label={t.common.signOut}
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center sidebar-menu-item"
+                      aria-label={t.common.signOut}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" align="end" sideOffset={12}>
+                    <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {t.common.signOut}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TooltipTrigger>
                <TooltipContent side="right">{t.common.signOut}</TooltipContent>
             </Tooltip>
           ) : (
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-3 sidebar-menu-item"
-              onClick={logout}
-              aria-label={t.common.signOut}
-             >
-              <LogOut className="h-4 w-4" />
-              {t.common.signOut}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3 sidebar-menu-item"
+                  aria-label={t.common.signOut}
+                 >
+                  <LogOut className="h-4 w-4" />
+                  {t.common.signOut}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="start" sideOffset={12} className="w-full min-w-[200px] z-[9999]">
+                <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive gap-2">
+                  <LogOut className="h-4 w-4" />
+                  {t.common.signOut}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>

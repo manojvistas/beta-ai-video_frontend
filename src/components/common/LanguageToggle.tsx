@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Languages } from 'lucide-react'
 import { useTranslation } from '@/lib/hooks/use-translation'
+import { cn } from '@/lib/utils'
 
 interface LanguageToggleProps {
   iconOnly?: boolean
@@ -33,36 +34,56 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
           <span className="sr-only">{t.navigation.language}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent 
+        align="start" 
+        side="right"
+        sideOffset={12}
+        className="z-[9999] min-w-[180px] bg-popover border-border shadow-xl p-1.5"
+      >
         <DropdownMenuItem 
           onClick={() => setLanguage('en-US')}
-          className={currentLang === 'en-US' || currentLang.startsWith('en') ? 'bg-accent' : ''}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors focus:bg-accent focus:text-accent-foreground",
+            (currentLang === 'en-US' || currentLang.startsWith('en')) ? 'bg-accent/80 text-accent-foreground' : 'hover:bg-accent/50'
+          )}
         >
-          <span>{t.common.english}</span>
+          <span className="text-sm font-medium">{t.common.english}</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setLanguage('zh-CN')}
-          className={currentLang === 'zh-CN' || currentLang.startsWith('zh-Hans') || currentLang === 'zh' ? 'bg-accent' : ''}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors focus:bg-accent focus:text-accent-foreground",
+            (currentLang === 'zh-CN' || currentLang.startsWith('zh-Hans') || currentLang === 'zh') ? 'bg-accent/80 text-accent-foreground' : 'hover:bg-accent/50'
+          )}
         >
-          <span>{t.common.chinese}</span>
+          <span className="text-sm font-medium">{t.common.chinese}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setLanguage('zh-TW')}
-          className={currentLang === 'zh-TW' || currentLang.startsWith('zh-Hant') ? 'bg-accent' : ''}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors focus:bg-accent focus:text-accent-foreground",
+            (currentLang === 'zh-TW' || currentLang.startsWith('zh-Hant')) ? 'bg-accent/80 text-accent-foreground' : 'hover:bg-accent/50'
+          )}
         >
-          <span>{t.common.traditionalChinese}</span>
+          <span className="text-sm font-medium">{t.common.traditionalChinese}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setLanguage('pt-BR')}
-          className={currentLang === 'pt-BR' || currentLang.startsWith('pt') ? 'bg-accent' : ''}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors focus:bg-accent focus:text-accent-foreground",
+            (currentLang === 'pt-BR' || currentLang.startsWith('pt')) ? 'bg-accent/80 text-accent-foreground' : 'hover:bg-accent/50'
+          )}
         >
-          <span>{t.common.portuguese}</span>
+          <span className="text-sm font-medium">{t.common.portuguese}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setLanguage('ja-JP')}
-          className={currentLang === 'ja-JP' || currentLang.startsWith('ja') ? 'bg-accent' : ''}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors focus:bg-accent focus:text-accent-foreground",
+            (currentLang === 'ja-JP' || currentLang.startsWith('ja')) ? 'bg-accent/80 text-accent-foreground' : 'hover:bg-accent/50'
+          )}
         >
-          <span>{t.common.japanese}</span>
+          <span className="text-sm font-medium">{t.common.japanese}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
