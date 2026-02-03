@@ -171,7 +171,18 @@ export function DefaultModelsSection({ models, defaults }: DefaultModelsSectionP
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {missingRequired.length > 0 && (
+        {models.length === 0 && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>No models configured yet.</strong>
+              <br />
+              Scroll down to the Language Models and Embedding Models sections below to add models from your configured AI provider (Google).
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {missingRequired.length > 0 && models.length > 0 && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
@@ -198,6 +209,7 @@ export function DefaultModelsSection({ models, defaults }: DefaultModelsSectionP
                   <Select
                     value={currentValue || ""}
                     onValueChange={(value) => handleChange(config.key, value)}
+                    disabled={availableModels.length === 0}
                   >
                     <SelectTrigger 
                       id={config.id}
@@ -208,22 +220,31 @@ export function DefaultModelsSection({ models, defaults }: DefaultModelsSectionP
                       }
                     >
                       <SelectValue placeholder={
-                        config.required && !isValidModel && availableModels.length > 0 
+                        availableModels.length === 0
+                          ? `No ${config.modelType} models available`
+                          : config.required && !isValidModel && availableModels.length > 0 
                           ? t.models.requiredModelPlaceholder
                           : t.models.selectModelPlaceholder
                       } />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableModels.sort((a, b) => a.name.localeCompare(b.name)).map((model) => (
-                        <SelectItem key={model.id} value={model.id}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{model.name}</span>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              {model.provider}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {availableModels.length === 0 ? (
+                        <div className="p-4 text-sm text-muted-foreground text-center">
+                          No {config.modelType} models found.<br />
+                          Scroll down to add models first.
+                        </div>
+                      ) : (
+                        availableModels.sort((a, b) => a.name.localeCompare(b.name)).map((model) => (
+                          <SelectItem key={model.id} value={model.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{model.name}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {model.provider}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   {!config.required && currentValue && (
