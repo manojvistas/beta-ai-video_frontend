@@ -9,7 +9,9 @@ export function useAuth() {
   const {
     isAuthenticated,
     isLoading,
+    isCheckingAuth,
     login,
+    register,
     logout,
     checkAuth,
     checkAuthRequired,
@@ -28,6 +30,8 @@ export function useAuth() {
           if (required) {
             checkAuth()
           }
+        }).catch((err) => {
+          console.error('Failed to check auth requirement:', err)
         })
       } else if (authRequired) {
         // Auth is required, check credentials
@@ -38,8 +42,8 @@ export function useAuth() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasHydrated, authRequired])
 
-  const handleLogin = async (password: string) => {
-    const success = await login(password)
+  const handleLogin = async (email: string, password: string) => {
+    const success = await login(email, password)
     if (success) {
       // Check if there's a stored redirect path
       const redirectPath = sessionStorage.getItem('redirectAfterLogin')
@@ -58,11 +62,16 @@ export function useAuth() {
     router.push('/login')
   }
 
+  const handleRegister = async (name: string, email: string, password: string) => {
+    return register(name, email, password)
+  }
+
   return {
     isAuthenticated,
-    isLoading: isLoading || !hasHydrated, // Treat lack of hydration as loading
+    isLoading: isLoading || isCheckingAuth || !hasHydrated, // Treat auth checks as loading
     error,
     login: handleLogin,
+    register: handleRegister,
     logout: handleLogout
   }
 }

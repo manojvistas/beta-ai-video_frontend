@@ -67,64 +67,63 @@ export async function exportAsMarkdown(options: ExportOptions): Promise<void> {
  */
 export async function exportAsPDF(options: ExportOptions): Promise<void> {
   try {
-    const { title, htmlContent } = options
+    const { title, content } = options
 
-    if (!htmlContent) {
-      throw new Error('HTML content is required for PDF export')
+    if (!content) {
+      throw new Error('Content is required for PDF export')
     }
 
-    // Create a temporary container for rendering
-    const container = document.createElement('div')
-    container.innerHTML = htmlContent
-    container.style.position = 'absolute'
-    container.style.left = '-9999px'
-    container.style.width = '800px'
-    container.style.padding = '20px'
-    container.style.fontFamily = 'Arial, sans-serif'
-    container.style.lineHeight = '1.6'
-    container.style.color = '#000'
-    container.style.backgroundColor = '#fff'
-    document.body.appendChild(container)
-
-    // Render HTML to canvas
-    const canvas = await html2canvas(container, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      logging: false,
-    })
-
-    // Create PDF from canvas
-    const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4',
     })
 
-    const imgWidth = 210 // A4 width in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    let heightLeft = imgHeight
-    let position = 0
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 10
+    const maxWidth = pageWidth - margin * 2
+    let yPosition = 20
 
-    // Add title to PDF
-    pdf.setFontSize(16)
-    pdf.text(title, 10, 15)
-    position = 30
+    // Set title
+    pdf.setFontSize(18)
+    pdf.setFont('', 'bold')
+    const titleLines = pdf.splitTextToSize(title, maxWidth) as string[]
+    titleLines.forEach((line: string) => {
+      pdf.text(line, margin, yPosition)
+      yPosition += 8
+    })
 
-    // Add pages
-    while (heightLeft > 0) {
-      pdf.addImage(imgData, 'PNG', 0, position - imgHeight, imgWidth, imgHeight)
-      heightLeft -= 297 // A4 height in mm
-      position += 297
-      if (heightLeft > 0) {
+    yPosition += 5
+
+    // Split content by lines and add to PDF
+    pdf.setFontSize(11)
+    pdf.setFont('', 'normal')
+    const contentLines = content.split('\n')
+
+    for (const line of contentLines) {
+      // Check if we need a new page
+      if (yPosition > pageHeight - margin) {
         pdf.addPage()
+        yPosition = margin
+      }
+
+      if (line.trim()) {
+        const wrappedText = pdf.splitTextToSize(line, maxWidth) as string[]
+        wrappedText.forEach((wrappedLine: string) => {
+          if (yPosition > pageHeight - margin) {
+            pdf.addPage()
+            yPosition = margin
+          }
+          pdf.text(wrappedLine, margin, yPosition)
+          yPosition += 6
+        })
+      } else {
+        yPosition += 4 // Add spacing for empty lines
       }
     }
 
     pdf.save(`${sanitizeFilename(title)}.pdf`)
-
-    // Clean up
-    document.body.removeChild(container)
   } catch (error) {
     console.error('PDF export failed:', error)
     throw new Error('Failed to export as PDF')

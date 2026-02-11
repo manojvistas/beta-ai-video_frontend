@@ -13,11 +13,15 @@ export function middleware(request: NextRequest) {
   // This replaces the static rewrites in next.config.ts to allow dynamic runtime configuration
   if (pathname.startsWith('/api/')) {
     // Determine backend URL from environment or default
-    // Note: In Docker, this environment variable is effectively used at runtime by the Edge/Node runtime
-    const internalApiUrl = process.env.INTERNAL_API_URL || 'http://localhost:15055'
+    let internalApiUrl = process.env.INTERNAL_API_URL || 'http://localhost:15055'
+
+    // Route /api/auth/* to the Auth API container if configured
+    if (pathname.startsWith('/api/auth/')) {
+      internalApiUrl = process.env.INTERNAL_AUTH_API_URL || 'http://auth-api:4000'
+    }
     
     // Construct target URL
-    // internalApiUrl should be like "http://backend:15055"
+    // internalApiUrl should be like "http://backend:15055" or "http://auth-api:4000"
     // pathname preserves the "/api/..." prefix
     const targetUrlStr = `${internalApiUrl.replace(/\/$/, '')}${pathname}${search}`
     const targetUrl = new URL(targetUrlStr)

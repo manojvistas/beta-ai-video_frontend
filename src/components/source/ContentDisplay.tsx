@@ -17,17 +17,19 @@ interface ContentDisplayProps {
 export function ContentDisplay({ content, className = '' }: ContentDisplayProps) {
   const { preferences } = useContentPreferences()
 
-  const fontSize = `${(preferences.textSize / 100) * 16}px`
+  const fontSize = (preferences.textSize / 100) * 16
   const fontFamily = FONT_FAMILIES[preferences.fontFamily] || FONT_FAMILIES.inter
+
+  const containerStyle: React.CSSProperties = {
+    fontSize: `${fontSize}px`,
+    fontFamily: fontFamily,
+    lineHeight: 1.6,
+  }
 
   return (
     <div
       className={`prose prose-invert max-w-none ${className}`}
-      style={{
-        fontSize,
-        fontFamily,
-        lineHeight: 1.6,
-      }}
+      style={containerStyle}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}

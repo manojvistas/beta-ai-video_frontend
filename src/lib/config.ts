@@ -38,6 +38,15 @@ export async function getApiUrl(): Promise<string> {
 }
 
 /**
+ * Get the Auth API URL to use for authentication requests.
+ */
+export async function getAuthApiUrl(): Promise<string> {
+  const envAuthUrl = process.env.NEXT_PUBLIC_AUTH_API_URL
+  // Return empty string to default to relative path (proxy) if not set
+  return envAuthUrl && envAuthUrl.length > 0 ? envAuthUrl : ''
+}
+
+/**
  * Get the full configuration.
  */
 export async function getConfig(): Promise<AppConfig> {

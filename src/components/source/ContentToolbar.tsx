@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useMemo } from 'react'
 import {
   Download,
   Share2,
@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ZoomIn,
   ZoomOut,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -60,7 +61,22 @@ export function ContentToolbar({
 }: ContentToolbarProps) {
   const [isExporting, setIsExporting] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [fontSearch, setFontSearch] = useState('')
   const { preferences, updateTextSize, updateFontFamily } = useContentPreferences()
+
+  // Filter fonts based on search
+  const filteredFonts = useMemo(() => {
+    if (!fontSearch.trim()) {
+      return (Object.keys(FONT_DISPLAY_NAMES) as FontFamily[])
+    }
+    const searchLower = fontSearch.toLowerCase()
+    return (Object.keys(FONT_DISPLAY_NAMES) as FontFamily[]).filter(
+      (font) =>
+        FONT_DISPLAY_NAMES[font].toLowerCase().includes(searchLower) ||
+        font.toLowerCase().includes(searchLower)
+    )
+  }, [fontSearch])
 
   // Handle export
   const handleExport = useCallback(
@@ -83,17 +99,44 @@ export function ContentToolbar({
     [title, content, htmlContent]
   )
 
-  // Handle copy to clipboard
+  // Handle native share with Web Share API or fallback to modal
+  const handleShare = useCallback(async () => {
+    try {
+      const linkToShare = sourceUrl || window.location.href
+      
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: title || 'Content',
+            text: 'Check out this content',
+            url: linkToShare,
+          })
+          toast.success('Content shared!')
+        } catch (error: any) {
+          // User cancelled the share dialog
+          if (error.name !== 'AbortError') {
+            throw error
+          }
+        }
+      } else {
+        // Fallback to custom modal if Web Share API not supported
+        setShowShareModal(true)
+      }
+    } catch (error) {
+      console.error('Share failed:', error)
+      toast.error('Failed to share content')
+    }
+  }, [title, sourceUrl])
+
+  // Handle copy to clipboard (for modal fallback)
   const handleCopyLink = useCallback(async () => {
     try {
-      if (sourceUrl) {
-        await navigator.clipboard.writeText(sourceUrl)
-      } else {
-        await navigator.clipboard.writeText(window.location.href)
-      }
+      const linkToCopy = sourceUrl || window.location.href
+      await navigator.clipboard.writeText(linkToCopy)
       setCopied(true)
-      toast.success('Link copied to clipboard')
-      setTimeout(() => setCopied(false), 2000)
+      toast.success('Link copied to clipboard!')
+      setTimeout(() => setCopied(false), 3000)
     } catch (error) {
       console.error('Failed to copy:', error)
       toast.error('Failed to copy link')
@@ -119,6 +162,7 @@ export function ContentToolbar({
     (font: FontFamily) => {
       updateFontFamily(font)
       onFontChange?.(font)
+      setFontSearch('')
     },
     [updateFontFamily, onFontChange]
   )
@@ -199,30 +243,73 @@ export function ContentToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Share Button */}
+        {/* Share Button - Web Share API with Fallback */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
               size="sm"
-              onClick={handleCopyLink}
+              onClick={handleShare}
               className="gap-2"
             >
-              {copied ? (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </>
-              )}
+              <Share2 className="h-4 w-4" />
+              Share
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Copy shareable link to clipboard</TooltipContent>
+          <TooltipContent>
+            {/* @ts-ignore */}
+            {typeof navigator !== 'undefined' && navigator.share ? 'Share via apps' : 'Copy share link'}
+          </TooltipContent>
         </Tooltip>
+
+        {/* Share Modal */}
+        {showShareModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-background border border-border rounded-lg p-6 max-w-md w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Share This Content</h2>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="bg-muted p-3 rounded border border-border">
+                  <p className="text-xs text-muted-foreground mb-2">Link to share:</p>
+                  <p className="text-sm break-all font-mono">
+                    {sourceUrl || window.location.href}
+                  </p>
+                </div>
+                <Button
+                  onClick={handleCopyLink}
+                  className="w-full gap-2"
+                  variant="default"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => setShowShareModal(false)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Text Size Controls */}
         <div className="flex items-center gap-1 px-2 py-1 rounded border border-input">
@@ -259,7 +346,7 @@ export function ContentToolbar({
           </Tooltip>
         </div>
 
-        {/* Font Selector */}
+        {/* Font Selector with Search */}
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -273,22 +360,39 @@ export function ContentToolbar({
             </TooltipTrigger>
             <TooltipContent>Change font style</TooltipContent>
           </Tooltip>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Font Style</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-56">
+            <div className="p-2 pb-0">
+              <input
+                type="text"
+                placeholder="Search fonts..."
+                value={fontSearch}
+                onChange={(e) => setFontSearch(e.target.value)}
+                className="w-full px-2 py-1 text-sm rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
             <DropdownMenuSeparator />
-            {(Object.keys(FONT_DISPLAY_NAMES) as FontFamily[]).map((font) => (
-              <DropdownMenuItem
-                key={font}
-                onClick={() => handleFontChange(font)}
-                className={
-                  preferences.fontFamily === font ? 'bg-accent font-semibold' : ''
-                }
-              >
-                <span style={{ fontFamily: FONT_DISPLAY_NAMES[font] }}>
-                  {FONT_DISPLAY_NAMES[font]}
-                </span>
-              </DropdownMenuItem>
-            ))}
+            <div className="max-h-64 overflow-y-auto">
+              {filteredFonts.length > 0 ? (
+                filteredFonts.map((font) => (
+                  <DropdownMenuItem
+                    key={font}
+                    onClick={() => handleFontChange(font)}
+                    className={`cursor-pointer ${
+                      preferences.fontFamily === font ? 'bg-accent font-semibold' : ''
+                    }`}
+                  >
+                    <span style={{ fontFamily: FONT_DISPLAY_NAMES[font] }}>
+                      {FONT_DISPLAY_NAMES[font]}
+                    </span>
+                    {preferences.fontFamily === font && (
+                      <CheckCircle className="h-4 w-4 ml-auto" />
+                    )}
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <DropdownMenuItem disabled>No fonts found</DropdownMenuItem>
+              )}
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

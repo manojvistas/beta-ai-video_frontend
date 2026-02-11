@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-export type FontFamily = 'inter' | 'times' | 'arial' | 'georgia' | 'roboto'
+export type FontFamily = 'inter' | 'times' | 'arial' | 'georgia' | 'roboto' | 'courier' | 'verdana' | 'trebuchet' | 'lucida' | 'palatino' | 'garamond' | 'bookman' | 'comic' | 'impact' | 'tahoma'
 
 interface ContentPreferences {
   textSize: number // in percentage: 100 = default
@@ -104,11 +104,21 @@ export function useShareState() {
  * Font family to CSS mapping
  */
 export const FONT_FAMILIES: Record<FontFamily, string> = {
-  inter: 'font-sans',
-  times: 'font-serif',
-  arial: '"Arial", sans-serif',
-  georgia: '"Georgia", serif',
+  inter: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
+  times: '"Times New Roman", Times, serif',
+  arial: 'Arial, sans-serif',
+  georgia: 'Georgia, serif',
   roboto: '"Roboto", sans-serif',
+  courier: '"Courier New", monospace',
+  verdana: 'Verdana, sans-serif',
+  trebuchet: '"Trebuchet MS", sans-serif',
+  lucida: '"Lucida Console", monospace',
+  palatino: '"Palatino Linotype", "Book Antiqua", serif',
+  garamond: 'Garamond, serif',
+  bookman: '"Bookman Old Style", serif',
+  comic: '"Comic Sans MS", cursive',
+  impact: 'Impact, sans-serif',
+  tahoma: 'Tahoma, sans-serif',
 }
 
 /**
@@ -120,4 +130,14 @@ export const FONT_DISPLAY_NAMES: Record<FontFamily, string> = {
   arial: 'Arial',
   georgia: 'Georgia',
   roboto: 'Roboto',
+  courier: 'Courier New',
+  verdana: 'Verdana',
+  trebuchet: 'Trebuchet MS',
+  lucida: 'Lucida Console',
+  palatino: 'Palatino',
+  garamond: 'Garamond',
+  bookman: 'Bookman Old Style',
+  comic: 'Comic Sans MS',
+  impact: 'Impact',
+  tahoma: 'Tahoma',
 }
