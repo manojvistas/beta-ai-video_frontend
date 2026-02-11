@@ -224,11 +224,10 @@ export function LoginForm() {
             type="button"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            disabled={!authApiUrl}
             onClick={() => {
-              if (authApiUrl) {
-                window.location.href = `${authApiUrl}/api/auth/google`
-              }
+              // Use authApiUrl if available, otherwise use relative path (proxied through middleware)
+              const oauthUrl = authApiUrl ? `${authApiUrl}/api/auth/google` : '/api/auth/google'
+              window.location.href = oauthUrl
             }}
              className="w-full bg-white border border-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-xl shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all flex items-center justify-center gap-2"
           >
