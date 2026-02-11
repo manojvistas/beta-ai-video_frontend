@@ -37,7 +37,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           const authApiUrl = await getAuthApiUrl()
           // Use /api/auth/health to support both direct access and proxying
-          const response = await fetch(`${authApiUrl}/api/auth/health`, { cache: 'no-store' })
+          const response = await fetch(`${authApiUrl}/api/auth/health`, {
+            cache: 'no-store',
+            credentials: 'include'
+          })
 
           if (!response.ok) {
             throw new Error(`Auth service unavailable: ${response.status}`)
