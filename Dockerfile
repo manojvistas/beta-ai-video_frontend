@@ -3,16 +3,16 @@ FROM node:20-bookworm-slim AS base
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
-# Fix: Copy from frontend/ directory since context is root
-COPY frontend/package.json frontend/package-lock.json ./
+# Copy from frontend directory (context is frontend)
+COPY package.json package-lock.json ./
 RUN npm install --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-# Fix: Copy only frontend directory contents to /app
-COPY frontend/ .
+# Copy frontend sources into the image
+COPY . .
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
@@ -44,7 +44,7 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy wait script from project root
+# Copy wait script from frontend/scripts
 COPY scripts/wait-for-api.sh ./wait-for-api.sh
 RUN chmod +x ./wait-for-api.sh
 RUN sed -i 's/\r$//' ./wait-for-api.sh
