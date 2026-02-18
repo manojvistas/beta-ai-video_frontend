@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MoreHorizontal, Archive, ArchiveRestore, Trash2, FileText, StickyNote } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { motion } from 'framer-motion'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +19,13 @@ import { NotebookDeleteDialog } from './NotebookDeleteDialog'
 import { useState } from 'react'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { getDateLocale } from '@/lib/utils/date-locale'
+
 interface NotebookCardProps {
   notebook: NotebookResponse
+  index?: number
 }
 
-export function NotebookCard({ notebook }: NotebookCardProps) {
+export function NotebookCard({ notebook, index = 0 }: NotebookCardProps) {
   const { t, language } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const router = useRouter()
@@ -42,11 +45,18 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
 
   return (
     <>
-      <Card 
-        className="group card-hover"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
+        whileHover={{ 
+          y: -5,
+          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+        }}
         onClick={handleCardClick}
-        style={{ cursor: 'pointer' }}
+        className="group cursor-pointer h-full"
       >
+        <Card className="h-full border-muted/60 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/50">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
@@ -65,7 +75,7 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreHorizontal className="h-4 w-4" />
@@ -90,7 +100,7 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
                       e.stopPropagation()
                       setShowDeleteDialog(true)
                     }}
-                    className="text-red-600"
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     {t.common.delete}
@@ -101,30 +111,33 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
           </CardHeader>
           
           <CardContent>
-            <CardDescription className="line-clamp-2 text-sm">
+            <CardDescription className="line-clamp-2 text-sm min-h-[40px]">
               {notebook.description || t.chat.noDescription}
             </CardDescription>
 
-            <div className="mt-3 text-xs text-muted-foreground">
-              {t.common.updated.replace('{time}', formatDistanceToNow(new Date(notebook.updated), { 
-                addSuffix: true,
-                locale: getDateLocale(language)
-              }))}
+            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+              <span>
+                {t.common.updated.replace('{time}', formatDistanceToNow(new Date(notebook.updated), { 
+                  addSuffix: true,
+                  locale: getDateLocale(language)
+                }))}
+              </span>
             </div>
 
             {/* Item counts footer */}
-            <div className="mt-3 flex items-center gap-1.5 border-t pt-3">
-              <Badge variant="outline" className="text-xs flex items-center gap-1 px-1.5 py-0.5 text-primary border-primary/50">
-                <FileText className="h-3 w-3" />
-                <span>{notebook.source_count}</span>
+            <div className="mt-3 flex items-center gap-2 border-t pt-3">
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 font-normal">
+                <FileText className="h-3 w-3 mr-1" />
+                {notebook.source_count}
               </Badge>
-              <Badge variant="outline" className="text-xs flex items-center gap-1 px-1.5 py-0.5 text-primary border-primary/50">
-                <StickyNote className="h-3 w-3" />
-                <span>{notebook.note_count}</span>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 font-normal">
+                <StickyNote className="h-3 w-3 mr-1" />
+                {notebook.note_count}
               </Badge>
             </div>
           </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
 
       <NotebookDeleteDialog
         open={showDeleteDialog}

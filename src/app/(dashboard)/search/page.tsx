@@ -158,7 +158,7 @@ export default function SearchPage() {
 
   return (
     <AppShell>
-      <div className="p-4 md:p-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
         <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">{t.searchPage.askAndSearch}</h1>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'ask' | 'search')} className="w-full space-y-6">

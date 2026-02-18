@@ -2,7 +2,17 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { getAuthApiUrl } from '@/lib/config'
 
+export interface User {
+  id: string
+  email: string
+  name?: string
+  picture?: string
+  bio?: string
+  [key: string]: any
+}
+
 interface AuthState {
+  user: User | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
@@ -16,11 +26,13 @@ interface AuthState {
   register: (name: string, email: string, password: string) => Promise<boolean>
   logout: () => void
   checkAuth: () => Promise<boolean>
+  updateUser: (updates: Partial<User>) => void
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
+      user: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -78,8 +90,15 @@ export const useAuthStore = create<AuthState>()(
           })
           
           if (response.ok) {
+            let user = null
+            try {
+              const data = await response.clone().json()
+              user = data.user || data
+            } catch (e) { console.warn('Failed to parse user data', e) }
+
             set({ 
               isAuthenticated: true, 
+              user,
               isLoading: false,
               lastAuthCheck: Date.now(),
               error: null
@@ -202,8 +221,15 @@ export const useAuthStore = create<AuthState>()(
           })
           
           if (response.ok) {
+            let user = null
+            try {
+              const data = await response.clone().json()
+              user = data.user || data
+            } catch (e) { /* ignore */ }
+            
             set({ 
               isAuthenticated: true, 
+              user,
               lastAuthCheck: now,
               isCheckingAuth: false 
             })
@@ -225,12 +251,20 @@ export const useAuthStore = create<AuthState>()(
           })
           return false
         }
+      },
+      
+      updateUser: (updates: Partial<User>) => {
+        const currentUser = get().user
+        if (currentUser) {
+          set({ user: { ...currentUser, ...updates } })
+        }
       }
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated
+        isAuthenticated: state.isAuthenticated,
+        user: state.user
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true)

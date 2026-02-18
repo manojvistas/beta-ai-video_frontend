@@ -59,6 +59,11 @@ import {
   Database,
   AlertCircle,
   MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  FileText,
+  Video,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { getDateLocale } from '@/lib/utils/date-locale'
@@ -66,6 +71,8 @@ import { toast } from 'sonner'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { SourceInsightDialog } from '@/components/source/SourceInsightDialog'
 import { NotebookAssociations } from '@/components/source/NotebookAssociations'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 interface SourceDetailContentProps {
   sourceId: string
@@ -96,6 +103,10 @@ export function SourceDetailContent({
   const [selectedInsight, setSelectedInsight] = useState<SourceInsightResponse | null>(null)
   const [insightToDelete, setInsightToDelete] = useState<string | null>(null)
   const [deletingInsight, setDeletingInsight] = useState(false)
+
+  // New state for UI improvements
+  const [isDownloadingVideo, setIsDownloadingVideo] = useState(false)
+  const [isTranscriptExpanded, setIsTranscriptExpanded] = useState(false)
 
   const fetchSource = useCallback(async () => {
     try {
@@ -328,6 +339,36 @@ export function SourceDetailContent({
     return getYouTubeVideoId(source.asset.url)
   }, [source?.asset?.url])
 
+  const handleVideoDownload = async () => {
+    if (!source?.asset?.url || isDownloadingVideo) return
+
+    try {
+      setIsDownloadingVideo(true)
+      const response = await fetch(source.asset.url)
+      
+      if (!response.ok) throw new Error('Download failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      // Extract filename from URL or default to video.mp4
+      const filename = source.asset.url.split('/').pop() || 'video.mp4'
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      toast.success(t.common.success)
+    } catch (error) {
+      console.error('Video download failed:', error)
+      toast.error(t.common.error)
+    } finally {
+      setIsDownloadingVideo(false)
+    }
+  }
+
   const handleDelete = async () => {
     if (!source) return
 
@@ -446,71 +487,155 @@ export function SourceDetailContent({
             <TabsTrigger value="details">{t.sources.details}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="content" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {isYouTubeUrl && <Youtube className="h-5 w-5" />}
-                  {t.sources.content}
-                </CardTitle>
-                {source.asset?.url && !isYouTubeUrl && (
-                  <CardDescription className="flex items-center gap-2">
-                    <LinkIcon className="h-4 w-4" />
-                    <a
-                      href={source.asset.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline text-blue-600"
-                    >
-                      {source.asset.url}
-                    </a>
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {isYouTubeUrl && youTubeVideoId && (
-                  <div className="mb-6">
-                    <div className="aspect-video rounded-lg overflow-hidden bg-black">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${youTubeVideoId}`}
-                        title={t.common.accessibility.ytVideo}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                    {source.asset?.url && (
-                      <div className="mt-2">
-                        <a
-                          href={source.asset.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-muted-foreground hover:underline inline-flex items-center gap-1"
+          <TabsContent value="content" className="mt-6 space-y-8">
+            {/* Video Section - Top Card */}
+            {(isYouTubeUrl || source?.asset?.url) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="overflow-hidden border-border/40 shadow-sm hover:shadow-md transition-shadow duration-300 bg-background/50 backdrop-blur-sm">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                  <CardHeader className="pb-2 pt-6">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg font-medium">
+                        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
+                          {isYouTubeUrl ? <Youtube className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+                        </div>
+                        {isYouTubeUrl ? 'YouTube Video' : 'Video Source'}
+                      </CardTitle>
+                      
+                      {!isYouTubeUrl && source?.asset?.url && (
+                         <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleVideoDownload}
+                          disabled={isDownloadingVideo}
+                          className="gap-2 h-9 rounded-full px-4 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
                         >
-                          <ExternalLink className="h-3 w-3" />
-                          {t.sources.openOnYoutube}
-                        </a>
+                          {isDownloadingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                          {isDownloadingVideo ? 'Downloading...' : 'Download Video'}
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="pb-6">
+                     <div className="relative aspect-video w-full overflow-hidden rounded-xl border bg-black shadow-inner">
+                        {isYouTubeUrl && youTubeVideoId ? (
+                             <iframe
+                                src={`https://www.youtube.com/embed/${youTubeVideoId}`}
+                                title="YouTube video player"
+                                className="absolute top-0 left-0 w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                        ) : source?.asset?.url ? (
+                            <div className="w-full h-full flex items-center justify-center bg-muted/20">
+                                {/* Try to render as video if extension matches, else show link/placeholder */}
+                                {(source.asset.url.match(/\.(mp4|webm|mov|mkv)$/i)) ? (
+                                    <video 
+                                      src={source.asset.url} 
+                                      controls 
+                                      className="absolute top-0 left-0 w-full h-full"
+                                      preload="metadata"
+                                    >
+                                      Your browser does not support the video tag.
+                                    </video>
+                                ) : (
+                                    <div className="text-center p-6">
+                                        <p className="text-muted-foreground mb-4">External Source Link</p>
+                                        <a 
+                                            href={source.asset.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 text-primary hover:underline bg-background px-4 py-2 rounded-full shadow-sm border"
+                                        >
+                                            <ExternalLink className="h-4 w-4" />
+                                            Open {new URL(source.asset.url).hostname}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
+                     </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Transcript Section - Bottom Card */}
+            <motion.div
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="overflow-hidden border-border/40 shadow-sm hover:shadow-md transition-shadow duration-300">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 opacity-50" />
+                 
+                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-muted/20">
+                    <CardTitle className="flex items-center gap-2 text-lg font-medium">
+                      <div className="p-2 rounded-lg bg-pink-500/10 text-pink-500">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      {t.sources.content}
+                    </CardTitle>
+                    <ContentToolbar
+                         title={source?.title || 'Content'}
+                         content={source?.full_text || ''}
+                         htmlContent={source?.full_text || ''}
+                         sourceUrl={source?.asset?.url}
+                    />
+                 </CardHeader>
+                 
+                 <CardContent className="pt-6">
+                    {source?.full_text ? (
+                      <div className="relative">
+                        <div 
+                          className={cn(
+                            "mx-auto max-w-3xl overflow-y-auto transition-all duration-500 ease-in-out px-1",
+                            isTranscriptExpanded ? "max-h-[80vh]" : "max-h-[400px]"
+                          )}
+                        >
+                           <ContentDisplay content={source.full_text} className="pb-12" />
+                        </div>
+                        
+                        {/* Expand/Collapse Overlay & Button */}
+                        {!isTranscriptExpanded && source.full_text.length > 1000 && (
+                          <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                        )}
+                        
+                        {source.full_text.length > 500 && (
+                          <div className="flex justify-center pt-4 border-t mt-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setIsTranscriptExpanded(!isTranscriptExpanded)}
+                              className="text-muted-foreground hover:text-foreground group"
+                            >
+                              {isTranscriptExpanded ? (
+                                <>
+                                  Show Less <ChevronUp className="ml-2 h-4 w-4 transition-transform group-hover:-translate-y-1" />
+                                </>
+                              ) : (
+                                <>
+                                  Show Full Transcript <ChevronDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-1" />
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/10 rounded-xl border border-dashed">
+                        <FileText className="h-12 w-12 opacity-20 mb-4" />
+                        <p>{t.sources.noContent}</p>
                       </div>
                     )}
-                  </div>
-                )}
-                
-                {/* Content Enhancement Toolbar */}
-                <ContentToolbar
-                  title={source?.title || 'Content'}
-                  content={source?.full_text || ''}
-                  htmlContent={source?.full_text || ''}
-                  sourceUrl={source?.asset?.url}
-                />
-
-                {/* Content Display with User Preferences */}
-                {source?.full_text ? (
-                  <ContentDisplay content={source.full_text} />
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">{t.sources.noContent}</p>
-                )}
-              </CardContent>
-            </Card>
+                 </CardContent>
+              </Card>
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="insights" className="mt-6">

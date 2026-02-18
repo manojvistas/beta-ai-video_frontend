@@ -1,5 +1,6 @@
 'use client'
 
+import { UserProfileDropdown } from '@/components/layout/UserProfileDropdown'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -294,8 +295,8 @@ export function AppSidebar() {
 
         <div
           className={cn(
-            'border-t border-sidebar-border p-3 space-y-2 relative z-10',
-            isCollapsed && 'px-2'
+            'border-t border-sidebar-border p-2 space-y-2 relative z-10 flex flex-col',
+            isCollapsed && 'px-1 items-center'
           )}
         >
           {/* Command Palette hint */}
@@ -316,82 +317,9 @@ export function AppSidebar() {
             </div>
           )}
 
-           <div
-            className={cn(
-              'flex flex-col gap-2',
-              isCollapsed ? 'items-center' : 'items-stretch'
-            )}
-          >
-            {isCollapsed ? (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <ThemeToggle iconOnly />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{t.common.theme}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <LanguageToggle iconOnly />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{t.common.language}</TooltipContent>
-                </Tooltip>
-              </>
-            ) : (
-              <>
-                <ThemeToggle />
-                <LanguageToggle />
-              </>
-            )}
+          <div className="mt-auto pt-2 w-full">
+             <UserProfileDropdown />
           </div>
-
-          {isCollapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-center sidebar-menu-item"
-                      aria-label={t.common.signOut}
-                    >
-                      <LogOut className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="right" align="end" sideOffset={12}>
-                    <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
-                      <LogOut className="h-4 w-4 mr-2" />
-                      {t.common.signOut}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipTrigger>
-               <TooltipContent side="right">{t.common.signOut}</TooltipContent>
-            </Tooltip>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-3 sidebar-menu-item"
-                  aria-label={t.common.signOut}
-                 >
-                  <LogOut className="h-4 w-4" />
-                  {t.common.signOut}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start" sideOffset={12} className="w-full min-w-[200px] z-[9999]">
-                <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive gap-2">
-                  <LogOut className="h-4 w-4" />
-                  {t.common.signOut}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </div>
     </TooltipProvider>

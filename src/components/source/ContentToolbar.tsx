@@ -18,6 +18,7 @@ import {
   ZoomIn,
   ZoomOut,
   X,
+  Video,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -240,6 +241,42 @@ export function ContentToolbar({
               )}
               Plain Text (.txt)
             </DropdownMenuItem>
+            
+            {/* Always show Video Download option if a URL exists, let the user try */}
+            {sourceUrl && (
+                <>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem
+                  onClick={async () => {
+                    if (sourceUrl.includes('youtube.com') || sourceUrl.includes('youtu.be')) {
+                        // Scroll to video section if it exists on the page
+                        const videoElement = document.querySelector('iframe[title="YouTube video player"]');
+                        if (videoElement) {
+                            videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            toast.success('Scrolled to video player');
+                        } else {
+                            window.open(sourceUrl, '_blank');
+                        }
+                        return;
+                    }
+
+                     const a = document.createElement('a')
+                    a.href = sourceUrl
+                    a.download = sourceUrl.split('/').pop() || 'video.mp4'
+                    a.target = '_blank'
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    toast.success('Downloading video...')
+                  }}
+                  className="gap-2 text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50 dark:bg-indigo-900/10 hover:bg-indigo-100 dark:hover:bg-indigo-900/20"
+                >
+                  <Video className="h-4 w-4" />
+                  {sourceUrl.includes('youtube.com') || sourceUrl.includes('youtu.be') ? 'Open Video' : 'Download Video File'}
+                </DropdownMenuItem>
+                </>
+            )}
+
           </DropdownMenuContent>
         </DropdownMenu>
 

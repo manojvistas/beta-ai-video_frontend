@@ -2,10 +2,11 @@
 
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export function useAuth() {
   const router = useRouter()
+  const [initialCheckDone, setInitialCheckDone] = useState(false)
   const {
     isAuthenticated,
     isLoading,
@@ -17,30 +18,41 @@ export function useAuth() {
     checkAuthRequired,
     error,
     hasHydrated,
-    authRequired
+    authRequired,
+    user
   } = useAuthStore()
 
   useEffect(() => {
     // Only check auth after the store has hydrated from localStorage
-    if (hasHydrated) {
-      // First check if auth is required
-      if (authRequired === null) {
-        checkAuthRequired().then((required) => {
-          // If auth is required, check if we have valid credentials
-          if (required) {
-            checkAuth()
-          }
-        }).catch((err) => {
-          console.error('Failed to check auth requirement:', err)
-        })
-      } else if (authRequired) {
-        // Auth is required, check credentials
-        checkAuth()
+    if (!hasHydrated) return
+
+    let cancelled = false
+
+    const runInitialCheck = async () => {
+      try {
+        // Run the full auth check in a single async flow to avoid
+        // a loading-state gap between checkAuthRequired and checkAuth
+        let required = authRequired
+        if (required === null) {
+          required = await checkAuthRequired()
+        }
+        if (required && !cancelled) {
+          await checkAuth()
+        }
+      } catch (err) {
+        console.error('Failed to check auth:', err)
+      } finally {
+        if (!cancelled) {
+          setInitialCheckDone(true)
+        }
       }
-      // If authRequired === false, we're already authenticated (set in checkAuthRequired)
     }
+
+    runInitialCheck()
+
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasHydrated, authRequired])
+  }, [hasHydrated])
 
   const handleLogin = async (email: string, password: string) => {
     const success = await login(email, password)
@@ -67,8 +79,9 @@ export function useAuth() {
   }
 
   return {
+    user,
     isAuthenticated,
-    isLoading: isLoading || isCheckingAuth || !hasHydrated, // Treat auth checks as loading
+    isLoading: isLoading || isCheckingAuth || !hasHydrated || !initialCheckDone,
     error,
     login: handleLogin,
     register: handleRegister,
