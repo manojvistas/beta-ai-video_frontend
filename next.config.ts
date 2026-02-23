@@ -4,6 +4,21 @@ const nextConfig: NextConfig = {
   // Enable standalone output for optimized Docker deployment
   output: "standalone",
 
+  // Allow Google profile photos and data URIs for avatar
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+    ],
+    dangerouslyAllowSVG: false,
+  },
+
   // Experimental features
   // Type assertion needed: proxyClientMaxBodySize is valid in Next.js 15 but types lag behind
   experimental: {

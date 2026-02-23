@@ -112,7 +112,7 @@ export default function ProfilePage() {
                   
                   <div className="relative h-32 w-32 rounded-full border-4 border-card bg-card overflow-hidden shadow-inner cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                     {user?.picture ? (
-                       <Image src={user.picture} alt="Profile" fill className="object-cover" />
+                       <Image src={user.picture} alt="Profile" fill className="object-cover" unoptimized={user.picture.startsWith('data:')} />
                     ) : (
                        <div className="h-full w-full flex items-center justify-center bg-indigo-50 dark:bg-zinc-800 text-4xl font-bold text-indigo-500">
                           {user?.name?.[0] || 'U'}

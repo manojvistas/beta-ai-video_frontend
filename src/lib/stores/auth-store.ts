@@ -192,6 +192,8 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ 
           isAuthenticated: false,
+          user: null,
+          lastAuthCheck: null,
           error: null
         })
       },
@@ -262,6 +264,14 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      version: 3,
+      migrate: (persistedState: any, version: number) => {
+        // Wipe stale user data to force a fresh /me call.
+        if (version < 3) {
+          return { ...persistedState, user: null, lastAuthCheck: null }
+        }
+        return persistedState as AuthState
+      },
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user

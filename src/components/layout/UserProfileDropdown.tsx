@@ -93,7 +93,7 @@ export function UserProfileDropdown() {
             
             <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-sidebar-background z-10 bg-indigo-50 dark:bg-zinc-800 shadow-sm">
                 {displayPicture ? (
-                  <Image src={displayPicture} alt={displayName} fill className="object-cover" />
+                  <Image src={displayPicture} alt={displayName} fill className="object-cover" unoptimized={displayPicture.startsWith('data:')} />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-white dark:from-zinc-800 dark:to-zinc-900 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
                      {initials}
@@ -148,7 +148,7 @@ export function UserProfileDropdown() {
                  <div className="relative group/avatar cursor-pointer" onClick={triggerUpload}>
                     <div className="h-12 w-12 flex-shrink-0 relative rounded-full overflow-hidden border-2 border-white dark:border-zinc-800 shadow-md bg-white dark:bg-zinc-800">
                         {displayPicture ? (
-                            <Image src={displayPicture} alt={displayName} fill className="object-cover" />
+                            <Image src={displayPicture} alt={displayName} fill className="object-cover" unoptimized={displayPicture.startsWith('data:')} />
                         ) : (
                             <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-base font-bold">
                               {initials}

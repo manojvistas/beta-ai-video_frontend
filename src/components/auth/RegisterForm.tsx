@@ -74,6 +74,9 @@ export function RegisterForm() {
         const ok = await register(name.trim(), email.trim(), password)
         if (ok) {
             setSuccess(true)
+            setTimeout(() => {
+                router.push('/login')
+            }, 3000)
         }
     }
 
@@ -85,16 +88,23 @@ export function RegisterForm() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center text-center space-y-6"
                 >
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                        className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center"
+                    >
                         <CheckCircle2 className="h-8 w-8 text-green-600" />
-                    </div>
+                    </motion.div>
                     <div>
-                        <p className="text-gray-600 mb-2">We've sent a verification link to</p>
+                        <h3 className="text-xl font-bold text-gray-800">Account Created Successfully!</h3>
+                        <p className="text-gray-600 mt-2 mb-1">We've sent a verification link to</p>
                         <p className="font-semibold text-gray-900">{email}</p>
                     </div>
                     <p className="text-sm text-gray-500">
                         Please check your email to verify your account before logging in.
                     </p>
+                    <p className="text-xs text-gray-400">Redirecting to login in 3 seconds...</p>
                     
                      <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -122,7 +132,7 @@ export function RegisterForm() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             disabled={isLoading}
-                             className="pl-10 h-11 bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
+                             className="pl-10 h-11 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
                         />
                     </div>
                     <div className="relative group">
@@ -133,7 +143,7 @@ export function RegisterForm() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={isLoading}
-                            className="pl-10 h-11 bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
+                            className="pl-10 h-11 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
                         />
                     </div>
                     <div className="relative group">
@@ -144,7 +154,7 @@ export function RegisterForm() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={isLoading}
-                            className="pl-10 pr-10 h-11 bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
+                            className="pl-10 pr-10 h-11 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
                         />
                         <button
                             type="button"
@@ -183,7 +193,7 @@ export function RegisterForm() {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             disabled={isLoading}
-                            className="pl-10 pr-10 h-11 bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
+                            className="pl-10 pr-10 h-11 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
                         />
                         <button
                             type="button"

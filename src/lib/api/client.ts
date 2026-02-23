@@ -31,6 +31,9 @@ apiClient.interceptors.request.use(async (config) => {
         if (state?.token) {
           config.headers.Authorization = `Bearer ${state.token}`
         }
+        if (state?.user?.id) {
+          config.headers['X-User-Id'] = state.user.id
+        }
       } catch (error) {
         console.error('Error parsing auth storage:', error)
       }

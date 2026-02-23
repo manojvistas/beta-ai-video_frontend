@@ -109,7 +109,7 @@ export default function ResetPasswordPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={isLoading}
-                        className="pl-10 pr-10 h-12 bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
+                        className="pl-10 pr-10 h-12 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
                     />
                      <button
                         type="button"
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         disabled={isLoading}
-                        className="pl-10 pr-10 h-12 bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
+                        className="pl-10 pr-10 h-12 bg-gray-50/50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-xl transition-all"
                     />
                      <button
                         type="button"
