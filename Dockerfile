@@ -44,8 +44,8 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy wait script from frontend/scripts
-COPY scripts/wait-for-api.sh ./wait-for-api.sh
+# Copy wait script from backend/scripts
+COPY backend/scripts/wait-for-api.sh ./wait-for-api.sh
 RUN chmod +x ./wait-for-api.sh
 RUN sed -i 's/\r$//' ./wait-for-api.sh
 
